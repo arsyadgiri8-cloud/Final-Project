@@ -1,4 +1,4 @@
-# Asset Management System  
+# Sistem Pengelolaan Aset dan Pemeliharaan Perusahaan 
 Final Project Backend – Check Point 1
 
 Backend REST API untuk pengelolaan aset dan aktivitas maintenance menggunakan Spring Boot.
