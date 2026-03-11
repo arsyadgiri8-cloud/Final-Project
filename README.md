@@ -1,168 +1,113 @@
-# Sistem Pengelolaan Aset dan Pemeliharaan Perusahaan 
-Final Project Backend – Check Point 1
+# Asset Management System API
 
-Backend REST API untuk pengelolaan aset dan aktivitas maintenance menggunakan Spring Boot.
+Backend REST API for managing company assets, assignments, and maintenance using **Spring Boot**.
 
----
-
-## 📌 Check Point 1 Scope
-
-Dokumentasi ini mencakup:
-
-1. Analisa kebutuhan sistem  
-2. Flow Business  
-3. Desain Database  
-4. Desain Relational Database (ERD)  
-5. Database Migration  
-6. Create Database  
-7. Initial Data (Seed)
+The system allows administrators to manage assets, technicians to handle maintenance tasks, and employees to view assigned assets.
 
 ---
 
-# 1️⃣ Analisa Kebutuhan Sistem
+# Architecture
 
-### 🎯 Tujuan Sistem
+```mermaid
+flowchart TD
 
-Sistem ini dibuat untuk membantu perusahaan mencatat:
+Client[Client / Postman]
+Client --> API[Spring Boot API]
 
-- Data aset
-- Aktivitas maintenance aset
-- Data teknisi/user
+API --> DB[(MySQL Database)]
+API --> CACHE[(Redis Cache)]
 
-Sehingga proses monitoring aset menjadi lebih terstruktur.
-
+subgraph Docker Environment
+API
+DB
+CACHE
+end
+```
 ---
+# Tech Stack
+### Backend
+- Spring Boot
+- Spring Security
+- JWT Authentication
+- Spring Data JPA
 
-### 👥 Actor
-
-| Role | Deskripsi |
-|------|----------|
-Admin | Mengelola data aset  
-Technician | Melakukan maintenance aset  
-
----
-
-### ⚙ Kebutuhan Fungsional
-
-- Registrasi user
-- Login user
-- CRUD Asset
-- Create Maintenance
-- View Maintenance
-
----
-
-### 🔐 Kebutuhan Non-Fungsional
-
-- Java Spring Boot
-- Hibernate JPA
+### Database
 - MySQL
-- Autentikasi Basic Auth (sementara)
-- Arsitektur Layered (Controller → Service → Repository)
 
+### Cache
+- Redis
+
+### DevOps
+- Docker
+- Docker Compose
+
+### Tools
+- Postman
+- GitHub
 ---
+# Features
+### Authentication
+- Register
+- Login
+- JWT Token Authentication
 
-# 2️⃣ Flow Business
+### Asset Management
+- Create Asset
+- View Asset
+- Update Asset Status
+- Delete Asset
 
-Pada tahap ini, flow aplikasi berjalan sebagai berikut:
-
-1. User / Technician melakukan request API  
-2. Request melewati Security Filter  
-3. Controller menerima request  
-4. Service menjalankan business logic  
-5. Repository mengakses database  
-6. Response JSON dikirim ke client  
-
----
-
-<img width="2141" height="738" alt="image" src="https://github.com/user-attachments/assets/e3090cbc-c88d-489f-a964-9e0c96214383" />
-
----
-
-# 3️⃣ Desain Database
-Database terdiri dari 3 tabel utama:
-
-### 📄 users
-| Field | Type |
-|------|----------|
-id | bigint 
-name | varchar
-email | varchar
-password | varchar
-role | varchar
-created_at | datetime
-
-### 📄 assets
-| Field | Type |
-|------|----------|
-id | bigint 
-asset_name | varchar
-category | varchar
-purchase_date | date
-condition | varchar
-status | varchar
-created_at | datetime
-
-### 📄 maintenances
-| Field | Type |
-|------|----------|
-id | bigint 
-asset_id | bigint (FK)
-technician_id | bigint (FK)
-maintenance_date | date
-description | text
-status | varchar
-created_at | datetime
-
----
-
-# 4️⃣ Desain Relational Database (ERD)
-Relasi antar tabel:
-- users → maintenances (One to Many)
-- assets → maintenances (One to Many)
+### Asset Assignment
+- Assign Asset to Employee
+- View Assignment History
   
-<img width="764" height="646" alt="Untitled" src="https://github.com/user-attachments/assets/4bc1d8c9-0bbb-4360-833e-34f8e53d740c" />
+### Maintenance System
+- Create Maintenance Request
+- Technician Maintenance Queue
+- Complete Maintenance
+
+### Monitoring
+- Dashboard Monitoring Summary
+- Asset Status Tracking
 
 ---
 
-# 5️⃣ Database Migration
-Migration dilakukan otomatis oleh Hibernate:
-```
-spring.jpa.hibernate.ddl-auto=update
+# Database ERD
+<img width="1014" height="1126" alt="Untitled" src="https://github.com/user-attachments/assets/0cf96a64-59d7-49ee-a30f-65e30bfa7ab8" />
 
+### Relationship
+#### Role → Users
 ```
-Spring Boot akan:
-- Membuat tabel
-- Menyesuaikan kolom
-- Membuat relasi
-tanpa perlu SQL manual.
+One Role
+can have many Users
+```
+#### Users → Assignments
+```
+One User
+can have many Assignments
+```
+#### Assets → Assignments
+```
+One Asset
+can be assigned many times
+```
+#### Assets → Maintenance
+```
+One Asset
+can have multiple maintenance records
+```
+---
+
+## Business Flow
+
+The Asset Management System manages company assets from creation, assignment, monitoring, and maintenance.
+
+<img width="1571" height="2490" alt="mermaid-diagram (1)" src="https://github.com/user-attachments/assets/3d4052d6-57cc-401b-824a-57281e8fed80" />
 
 ---
 
-# 6️⃣ Create Database
-Database dibuat menggunakan MySQL:
-```
-CREATE DATABASE asset_management;
-```
-Kemudian dikoneksikan melalui:
-```
-spring.datasource.url=jdbc:mysql://localhost:3306/asset_management
-spring.datasource.username=root
-spring.datasource.password=
-```
+# Author
+### Muhammad Arsyad Giri
+### Backend Developer
 
 ---
-
-# 7️⃣ Initial Data (Seed)
-User pertama dibuat melalui endpoint:
-```
-POST /auth/register
-```
-Contoh payload:
-```
-{
-  "name": "Arsyad",
-  "email": "user@gmail.com",
-  "password": "123456"
-}
-```
