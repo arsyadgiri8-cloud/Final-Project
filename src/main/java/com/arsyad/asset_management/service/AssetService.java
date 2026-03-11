@@ -8,6 +8,7 @@ import com.arsyad.asset_management.repository.AssetRepository;
 import com.arsyad.asset_management.repository.AssignmentRepository;
 import com.arsyad.asset_management.repository.MaintenanceRepository;
 import com.arsyad.asset_management.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -171,7 +172,6 @@ public class AssetService {
     }
 
     // MAINTENANCE COMPLETE
-
     public void completeMaintenance(Long maintenanceId, boolean isBroken) {
 
         Maintenance maintenance = maintenanceRepository.findById(maintenanceId)
@@ -180,23 +180,6 @@ public class AssetService {
         maintenance.setStatus(MaintenanceStatus.DONE);
         maintenanceRepository.save(maintenance);
 
-        Asset asset = maintenance.getAsset();
-        asset.setLastMaintenanceDate(LocalDate.now());
-
-        if (isBroken) {
-            asset.setStatus(AssetStatus.RETIRED);
-        } else {
-
-            if (asset.getMaintenanceInterval() != null) {
-                asset.setNextMaintenanceDate(
-                        LocalDate.now().plusDays(asset.getMaintenanceInterval())
-                );
-            }
-
-            asset.setStatus(AssetStatus.AVAILABLE);
-        }
-
-        assetRepository.save(asset);
     }
 
     // DASHBOARD
@@ -253,4 +236,33 @@ public class AssetService {
                 .map(this::mapToResponse);
     }
 
+    //DELETE
+    public void deleteAsset(Long id) {
+
+        Asset asset = assetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Asset not found"));
+
+        assetRepository.delete(asset);
+    }
+
+    //CREATE MAINTENANCE
+    public void createMaintenance(Long assetId, LocalDate maintenanceDate) {
+
+        Asset asset = assetRepository.findById(assetId)
+                .orElseThrow(() -> new RuntimeException("Asset not found"));
+
+        if (maintenanceRepository.existsByAssetIdAndStatus(assetId, MaintenanceStatus.PENDING)) {
+            throw new RuntimeException("Asset already has pending maintenance");
+        }
+
+        Maintenance maintenance = new Maintenance();
+        maintenance.setAsset(asset);
+        maintenance.setMaintenanceDate(maintenanceDate);
+        maintenance.setStatus(MaintenanceStatus.PENDING);
+
+        maintenanceRepository.save(maintenance);
+
+        asset.setStatus(AssetStatus.MAINTENANCE);
+        assetRepository.save(asset);
+    }
 }

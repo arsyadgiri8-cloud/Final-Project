@@ -1,24 +1,45 @@
 services:
-  spring-deploy-student8-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: spring-deploy-student8-app:latest
-    container_name: spring-deploy-student8-app
-    ports:
-      - ${APP_PORT:-9008}:${APP_PORT:-9008}
-    env_file:
-      - .env
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:$${APP_PORT:-9008}/actuator/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - classroom_classroom_net
 
-networks:
-  classroom_classroom_net:
-    external: true
+  mysql:
+    image: mysql:8
+    container_name: asset_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: asset_management
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: spring
+      MYSQL_PASSWORD: spring123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./seed/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+
+  redis:
+    image: redis:7
+    container_name: asset_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    image: asset-management-api
+    container_name: asset_backend
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/asset_management
+      SPRING_DATASOURCE_USERNAME: spring
+      SPRING_DATASOURCE_PASSWORD: spring123
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+volumes:
+  mysql_data:
+  redis_data:

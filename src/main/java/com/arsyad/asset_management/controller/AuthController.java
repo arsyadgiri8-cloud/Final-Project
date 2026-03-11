@@ -21,14 +21,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
-        authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
 
-        String token = jwtService.generateToken(request.getEmail());
+        String token = jwtService.generateToken(authentication.getName());
 
         return ResponseEntity.ok(
                 Map.of("token", token)

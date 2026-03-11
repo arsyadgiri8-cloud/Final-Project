@@ -21,7 +21,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        // Insert roles jika belum ada
+        // Insert roles
         for (RoleName roleName : RoleName.values()) {
             roleRepository.findByName(roleName)
                     .orElseGet(() -> {
@@ -31,7 +31,7 @@ public class DataInitializer implements CommandLineRunner {
                     });
         }
 
-        // Create default admin
+        // ADMIN
         if (userRepository.findByEmail("admin@admin.com").isEmpty()) {
 
             Role adminRole = roleRepository.findByName(RoleName.ADMIN)
@@ -44,6 +44,36 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRole(adminRole);
 
             userRepository.save(admin);
+        }
+
+        // EMPLOYEE
+        if (userRepository.findByEmail("employee@email.com").isEmpty()) {
+
+            Role employeeRole = roleRepository.findByName(RoleName.EMPLOYEE)
+                    .orElseThrow();
+
+            User employee = new User();
+            employee.setName("Employee");
+            employee.setEmail("employee@email.com");
+            employee.setPassword(passwordEncoder.encode("123456"));
+            employee.setRole(employeeRole);
+
+            userRepository.save(employee);
+        }
+
+        // TECHNICIAN
+        if (userRepository.findByEmail("tech@email.com").isEmpty()) {
+
+            Role techRole = roleRepository.findByName(RoleName.TECHNICIAN)
+                    .orElseThrow();
+
+            User technician = new User();
+            technician.setName("Technician");
+            technician.setEmail("tech@email.com");
+            technician.setPassword(passwordEncoder.encode("123456"));
+            technician.setRole(techRole);
+
+            userRepository.save(technician);
         }
     }
 }

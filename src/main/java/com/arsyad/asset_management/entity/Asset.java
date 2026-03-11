@@ -1,5 +1,7 @@
 package com.arsyad.asset_management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,13 +37,11 @@ public class Asset extends BaseEntity{
 
     private LocalDate purchaseDate;
 
-    @ManyToOne
-    @JoinColumn(name = "assigned_to")
-
     @OneToMany(mappedBy = "asset")
+    @JsonIgnore
     private List<Assignment> assignments;
 
-    private Integer maintenanceInterval; // dalam hari
+    private Integer maintenanceInterval;
 
     private LocalDate lastMaintenanceDate;
 

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/asset")
@@ -29,12 +31,22 @@ public class AssetController {
     // PAGINATION (ADMIN & EMPLOYEE)
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @GetMapping("/page")
-    public ResponseEntity<Page<?>> getAssetsPage(
+    public ResponseEntity<?> getAssetsPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
 
+        Page<?> result = assetService.getAssetsWithPagination(page, size);
+
         return ResponseEntity.ok(
-                assetService.getAssetsWithPagination(page, size)
+                Map.of(
+                        "data", result.getContent(),
+                        "pagination", Map.of(
+                                "page", result.getNumber(),
+                                "size", result.getSize(),
+                                "totalElements", result.getTotalElements(),
+                                "totalPages", result.getTotalPages()
+                        )
+                )
         );
     }
 
@@ -72,5 +84,12 @@ public class AssetController {
         return ResponseEntity.ok(
                 assetService.getAssetsByStatus(status, page, size)
         );
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAsset(@PathVariable Long id) {
+        assetService.deleteAsset(id);
+        return ResponseEntity.ok("Asset deleted");
     }
 }
